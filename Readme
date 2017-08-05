@@ -1,0 +1,39 @@
+Input is a stream of:
+(timestamp, price)
+
+Output should contain:
+timestamp of last event in stream,
+value of last event in stream,
+number of events in window,
+sum of prices in window,
+minimum price in window,
+maximum price in window
+
+Idea is simple:
+Fold the Stream with the State that contain all information about the window to compute necessary output.
+With this in mind the program should consist of at leas 3 parts:
+  1. Algorithm to compute output.
+  2. Streaming reading of input.
+  3. Output writer.
+
+1. The Algorithm:
+
+Tha naive algorithm would be to save in state all measures that belong to the window,
+and on each new received measure make next:
+
+shift the end of the window to the new measure's timestamp;
+remove from window all measures that don't belong to it after the shift;
+recompute number of measures, sum, minimum and maximum.
+
+Possible optimisations:
+
+It will be better not to recompute all the values from scratch but reuse previous state.
+Assuming that events are distributed evenly,
+it would be much faster to compute sum and number of only removed measures from window,
+and then just minus it from the previous state.
+
+No need to recompute minimum and maximum also -
+we can use some heap to store all measures in ordered for quick min, max lookup.
+
+
+
