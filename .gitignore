@@ -1,0 +1,9 @@
+# Idea artifacts
+/.idea
+/*.iml
+
+# Build artifacts
+/project/project
+/project/target
+/public/target
+/target
