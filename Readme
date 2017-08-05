@@ -32,8 +32,9 @@ Assuming that events are distributed evenly,
 it would be much faster to compute sum and number of only removed measures from window,
 and then just minus it from the previous state.
 
-No need to recompute minimum and maximum also -
-we can use some heap to store all measures in ordered for quick min, max lookup.
-
+For minimum and maximum the state should maintain only candidates for maximum and minimum.
+In our stream the new element expires later then all others so state
+can safely forget about all smaller measures if it has received a bigger one for maximum
+and an safely forget about all bigger measures if it has received a smaller one for minimum.
 
 
