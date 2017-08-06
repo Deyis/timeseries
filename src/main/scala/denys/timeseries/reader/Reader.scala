@@ -8,6 +8,7 @@ import scala.util.Try
 
 object Reader {
   def read[T](source: => Source)(parser: String => Option[T]): Iterator[T] = using(source) { file =>
+    // todo find out what to do with invalid lines, right now they are just cleaned out
     file.getLines().flatMap(s => parser(s))
   }
 
