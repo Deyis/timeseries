@@ -36,11 +36,11 @@ class RollingWindowSpec extends FlatSpec with Matchers with GeneratorDrivenPrope
       min = None,
       max = None
     )
-    RollingWindow(windowLength = 60).getStats shouldEqual expectedStats
+    OptimizedRollingWindow(windowLength = 60).getStats shouldEqual expectedStats
   }
 
   it should "shift end to received measure timestamp" in forAll(measurementGen(Gen.posNum[Long])) { measurement =>
-    RollingWindow(windowLength = 60).shiftTo(measurement).getStats.lastMeasure shouldEqual Some(measurement)
+    OptimizedRollingWindow(windowLength = 60).shiftTo(measurement).getStats.lastMeasure shouldEqual Some(measurement)
   }
 
   it should "not count measures with timestamp older then last measure in window + window length" in forAll(partitionedMeasurements) {
@@ -52,40 +52,13 @@ class RollingWindowSpec extends FlatSpec with Matchers with GeneratorDrivenPrope
         min = Some(group2.map(_.price).min).map(RollingWindowUtils.round),
         max = Some(group2.map(_.price).max).map(RollingWindowUtils.round)
       )
-      (group1 ++ group2).foldLeft(RollingWindow(windowLength))((window, measurement) => window.shiftTo(measurement))
+      (group1 ++ group2).foldLeft(OptimizedRollingWindow(windowLength))((window, measurement) => window.shiftTo(measurement))
         .getStats shouldEqual expectedStats
   }
 
   it should "compute the same results as naive algorithm" in forAll(sortedMeasurements) { case (windowLength, measurements) =>
-    val target = measurements.foldLeft(RollingWindow(windowLength))((window, measurement) => window.shiftTo(measurement))
+    val target = measurements.foldLeft(OptimizedRollingWindow(windowLength))((window, measurement) => window.shiftTo(measurement))
     val naive = measurements.foldLeft(NaiveRollingWindow(windowLength))((window, measurement) => window.shiftTo(measurement))
     target.getStats shouldEqual naive.getStats
-  }
-
-  class NaiveRollingWindow(windowLength: Int)(
-    elems: List[Measurement],
-    n: Int,
-    sum: Double,
-    min: Option[Double],
-    max: Option[Double]
-  ){
-
-    def shiftTo(measurement: Measurement): NaiveRollingWindow = {
-      val updated = elems.filter(el => Math.abs(el.timestamp - measurement.timestamp) <= windowLength) :+ measurement
-      val prices = updated.map(m => RollingWindowUtils.round(m.price))
-      val newN = updated.size
-      val newSum = prices.sum
-      val newMin = if(updated.isEmpty) None else Some(prices.min)
-      val newMax = if(updated.isEmpty) None else Some(prices.max)
-      new NaiveRollingWindow(windowLength)(updated, newN, newSum, newMin, newMax)
-    }
-
-    def getStats: RollingWindow.Stats = RollingWindow.Stats(elems.lastOption, n, RollingWindowUtils.round(sum), min, max)
-  }
-
-  object NaiveRollingWindow{
-    def apply(windowLength: Int): NaiveRollingWindow =
-      new NaiveRollingWindow(windowLength)(List.empty, 0, 0, None, None)
-
   }
 }
