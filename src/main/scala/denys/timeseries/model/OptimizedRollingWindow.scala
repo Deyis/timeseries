@@ -12,11 +12,11 @@ object RollingWindow {
 }
 
 class OptimizedRollingWindow private(windowLength: Int)(
-    elems: List[Measurement],
-    n: Int,
-    sum: Double,
-    min: WindowAggregate[Double],
-    max: WindowAggregate[Double]
+  elems: List[Measurement],
+  n: Int,
+  sum: Double,
+  min: WindowAggregation[Double],
+  max: WindowAggregation[Double]
 ) extends RollingWindow {
 
   def shiftTo(measurement: Measurement): OptimizedRollingWindow = {
@@ -35,7 +35,7 @@ class OptimizedRollingWindow private(windowLength: Int)(
 
 object OptimizedRollingWindow {
   def apply(windowLength: Int): OptimizedRollingWindow =
-    new OptimizedRollingWindow(windowLength)(List.empty, 0, 0, WindowAggregate(_ < _), WindowAggregate(_ > _))
+    new OptimizedRollingWindow(windowLength)(List.empty, 0, 0, WindowAggregation(_ < _), WindowAggregation(_ > _))
 }
 
 
